@@ -14,3 +14,14 @@ for k in komponen:
     nodes.add(k["node_b"])
 nodes.discard(0)  
 print(sorted(nodes))  
+
+tegangan_diketahui = {}
+for k in komponen:
+    if k["tipe"] == "V" and k["node_b"] == 0:
+        tegangan_diketahui[k["node_a"]] = k["nilai"]
+    elif k["tipe"] == "V" and k["node_a"] == 0:
+        tegangan_diketahui[k["node_b"]] = -k["nilai"]
+print("Tegangan diketahui:", tegangan_diketahui)
+
+node_hitung = [n for n in nodes if n not in tegangan_diketahui]
+print("Node yang perlu dihitung lewat KCL:", node_hitung)
