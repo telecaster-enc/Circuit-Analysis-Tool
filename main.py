@@ -54,3 +54,8 @@ print("Vektor I:\n", I)
 
 V_hitung = np.linalg.solve(G, I)
 print("Tegangan node hasil hitung:", dict(zip(node_hitung, V_hitung)))
+
+V_semua = {0: 0.0}
+V_semua.update(tegangan_diketahui)
+V_semua.update(dict(zip(node_hitung, V_hitung)))
+#pusing desain algoritma brb
