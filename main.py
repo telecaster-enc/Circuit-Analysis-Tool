@@ -9,12 +9,8 @@ komponen = [
     {"nama": "R5", "tipe": "R", "node_a": 3, "node_b": 0, "nilai": 470},
 ]
 
-nodes = set()
-for k in komponen:
-    nodes.add(k["node_a"])
-    nodes.add(k["node_b"])
-nodes.discard(0)  
-print(sorted(nodes))  
+nodes = sorted(set(k["node_a"] for k in komponen) | set(k["node_b"] for k in komponen) - {0})
+print("Node yang dihitung:", nodes)
 
 tegangan_diketahui = {}
 for k in komponen:
