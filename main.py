@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 komponen = [
     {"nama": "V1", "tipe": "V", "node_a": 1, "node_b": 0, "nilai": 9},
@@ -8,20 +9,23 @@ komponen = [
     {"nama": "R4", "tipe": "R", "node_a": 2, "node_b": 3, "nilai": 150},
     {"nama": "R5", "tipe": "R", "node_a": 3, "node_b": 0, "nilai": 470},
 ]
-
-nodes = sorted(set(k["node_a"] for k in komponen) | set(k["node_b"] for k in komponen) - {0})
-print("Node yang dihitung:", nodes)
-
+nodes = {}
 tegangan_diketahui = {}
-for k in komponen:
-    if k["tipe"] == "V" and k["node_b"] == 0:
-        tegangan_diketahui[k["node_a"]] = k["nilai"]
-    elif k["tipe"] == "V" and k["node_a"] == 0:
-        tegangan_diketahui[k["node_b"]] = -k["nilai"]
-print("Tegangan diketahui:", tegangan_diketahui)
+
+def define_nodes(komponen):
+    nodes = sorted(set(k["node_a"] for k in komponen) | set(k["node_b"] for k in komponen) - {0})
+    #print("Node yang dihitung:", nodes)
+
+def find_tegangan(komponen):
+    for k in komponen:
+        if k["tipe"] == "V" and k["node_b"] == 0:
+           tegangan_diketahui[k["node_a"]] = k["nilai"]
+        elif k["tipe"] == "V" and k["node_a"] == 0:
+            tegangan_diketahui[k["node_b"]] = -k["nilai"]
+    #print("Tegangan diketahui:", tegangan_diketahui)
 
 node_hitung = [n for n in nodes if n not in tegangan_diketahui]
-print("Node yang perlu dihitung lewat KCL:", node_hitung)
+#print("Node yang perlu dihitung lewat KCL:", node_hitung)
 
 idx = {n: i for i, n in enumerate(node_hitung)}
 n = len(node_hitung)
@@ -53,25 +57,32 @@ print("Matriks G:\n", G)
 print("Vektor I:\n", I)
 
 V_hitung = np.linalg.solve(G, I)
-print("Tegangan node hasil hitung:", dict(zip(node_hitung, V_hitung)))
+#print("Tegangan node hasil hitung:", dict(zip(node_hitung, V_hitung)))
 
 V_semua = {0: 0.0}
 V_semua.update(tegangan_diketahui)
 V_semua.update(dict(zip(node_hitung, V_hitung)))
 
 arus = {}
+tegangan_resistor = {}
 for k in komponen:
     if k["tipe"] == "R":
         arus[k["nama"]] = (V_semua[k["node_a"]] - V_semua[k["node_b"]]) / k["nilai"]
+        tegangan_resistor[k["nama"]] = (V_semua[k["node_a"]] - V_semua[k["node_b"]]) 
 
 print("\n=== Tegangan Node ===")
 for n in sorted(V_semua):
     print(f"Node {n}: {V_semua[n]:.3f} V")
 
+print("\n=== Tegangan Resistor ===")
+for n in sorted(tegangan_resistor):
+    print(f"{n}: {tegangan_resistor[n]:.3f} V")
+
 print("\n=== Arus Cabang ===")
 for nama, i in arus.items():
     print(f"{nama}: {i*1000:.2f} mA")
 
+check_node_value = {}
 print("\n=== Cek KCL (selisih harus ~0) ===")
 for n in node_hitung:
     keluar = 0
@@ -82,4 +93,10 @@ for n in node_hitung:
             keluar += arus[k["nama"]]
         elif k["node_b"] == n:
             keluar -= arus[k["nama"]]
+    check_node_value[n] = keluar
     print(f"Node {n}: {keluar:.2e} A")
+
+total = check_node_value[3]-check_node_value[2]
+
+if math.isclose(total, 0, abs_tol=1e-9):
+    print("Total is effectively zero!")
