@@ -58,4 +58,28 @@ print("Tegangan node hasil hitung:", dict(zip(node_hitung, V_hitung)))
 V_semua = {0: 0.0}
 V_semua.update(tegangan_diketahui)
 V_semua.update(dict(zip(node_hitung, V_hitung)))
-#pusing desain algoritma brb
+
+arus = {}
+for k in komponen:
+    if k["tipe"] == "R":
+        arus[k["nama"]] = (V_semua[k["node_a"]] - V_semua[k["node_b"]]) / k["nilai"]
+
+print("\n=== Tegangan Node ===")
+for n in sorted(V_semua):
+    print(f"Node {n}: {V_semua[n]:.3f} V")
+
+print("\n=== Arus Cabang ===")
+for nama, i in arus.items():
+    print(f"{nama}: {i*1000:.2f} mA")
+
+print("\n=== Cek KCL (selisih harus ~0) ===")
+for n in node_hitung:
+    keluar = 0
+    for k in komponen:
+        if k["tipe"] != "R":
+            continue
+        if k["node_a"] == n:
+            keluar += arus[k["nama"]]
+        elif k["node_b"] == n:
+            keluar -= arus[k["nama"]]
+    print(f"Node {n}: {keluar:.2e} A")
