@@ -18,28 +18,33 @@ tegangan_resistor = {}
 V_semua = {0: 0.0}
 
 def clear():
+    global komponen
     komponen = []
-    nodes, tegangan_diketahui, node_hitung, V_hitung = {}
+    nodes = {}
+    tegangan_diketahui = {}
+    global node_hitung
+    node_hitung = []
+    V_hitung = {}
+    arus = {}
+    tegangan_resistor = {}
     V_semua = {0: 0.0}
 
-    
 def solve_kvl():
     nodes = sorted(set(k["node_a"] for k in komponen) | set(k["node_b"] for k in komponen) - {0})
-    print("Node yang dihitung:", nodes)
+    #print("Node yang dihitung:", nodes)
     for k in komponen:
         if k["tipe"] == "V" and k["node_b"] == 0:
            tegangan_diketahui[k["node_a"]] = k["nilai"]
         elif k["tipe"] == "V" and k["node_a"] == 0:
             tegangan_diketahui[k["node_b"]] = -k["nilai"]
-    print("Tegangan diketahui:", tegangan_diketahui)
+    #print("Tegangan diketahui:", tegangan_diketahui)
+    global node_hitung
     node_hitung = [n for n in nodes if n not in tegangan_diketahui]
-    print("Node yang perlu dihitung lewat KCL:", node_hitung)
-    
+    #print("Node yang perlu dihitung lewat KCL:", node_hitung)
     idx = {n: i for i, n in enumerate(node_hitung)}
     n = len(node_hitung)
     G = np.zeros((n, n))
     I = np.zeros(n)
-
     for k in komponen:
         if k["tipe"] != "R":
             continue
@@ -67,12 +72,29 @@ def solve_kvl():
     V_semua.update(tegangan_diketahui)
     V_semua.update(dict(zip(node_hitung, V_hitung)))
 
-def solve_kcl_and_VR(komponen, V_semua):
+def solve_kcl_and_VR():
     for k in komponen:
         if k["tipe"] == "R":
             arus[k["nama"]] = (V_semua[k["node_a"]] - V_semua[k["node_b"]]) / k["nilai"]
             tegangan_resistor[k["nama"]] = (V_semua[k["node_a"]] - V_semua[k["node_b"]]) 
+    #output()
 
+def check_kcl_error():
+    result = 0
+    for n in node_hitung:
+        keluar = 0
+        for k in komponen:
+            if k["tipe"] != "R":
+                continue
+            if k["node_a"] == n:
+                keluar += arus[k["nama"]]
+            elif k["node_b"] == n:
+                keluar -= arus[k["nama"]]
+        if math.isclose(keluar, 0, abs_tol=1e-9):
+            result+=1
+    if result == len(node_hitung):
+        output()
+        
 def output():
     print("\n=== Tegangan Node ===")
     for n in sorted(V_semua):
@@ -86,22 +108,31 @@ def output():
     for nama, i in arus.items():
         print(f"{nama}: {i*1000:.2f} mA")
 
-def check_kcl_error(komponen, arus):
-    for n in node_hitung:
-        keluar = 0
-        for k in komponen:
-            if k["tipe"] != "R":
-                continue
-            if k["node_a"] == n:
-                keluar += arus[k["nama"]]
-            elif k["node_b"] == n:
-                keluar -= arus[k["nama"]]
-        if math.isclose(keluar, 0, abs_tol=1e-9):
-            print("True!")
-        else:
-            break
-    output()
+while True:
+    readuser = input(">")
+    if readuser == "selesai":
+        solve_kvl()
+        solve_kcl_and_VR()
+        check_kcl_error()
+    elif readuser == "-h":
+        print("Help Message")
+    elif readuser == "clear":
+        clear()
+    elif readuser == "seek":
+        print(komponen)
+    else:
+        split = readuser.split()
+        try:
+            tipe_k = []
+            split[0] == 'R' or 'V'
+            if split[0] == 'R':
+                tipe_k == 'R'
+            else:
+                tipe_k == 'V'
+            split[1].isdigit() and split[2].isdigit()
+            float(split[3])
+            komponen.append({split[0], tipe_k, split[1], split[2], split[3]})
+        except ValueError:
+            print("Input Error")        
         
-solve_kvl()
-solve_kcl_and_VR(komponen, V_semua)
-check_kcl_error(komponen, arus)
+
