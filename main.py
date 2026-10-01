@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import math
 
 komponen = [
@@ -16,23 +17,19 @@ V_hitung = {}
 arus = {}
 tegangan_resistor = {}
 V_semua = {0: 0.0}
+solved = False
+seeker = True
 
-def clear_partial():
+def seek():
+    for k in komponen:
+        print(f"{k["nama"]} Node A: {k["node_a"]} Node B: {k["node_b"]} Value: {k["nilai"]} {"V" if k["tipe"] == 'V' else 'Ω'}")
+
+def clear(all):
+    global komponen, nodes, tegangan_diketahui, node_hitung, V_hitung, arus, tegangan_resistor, V_semua
+    if all:
+        komponen = []
     nodes = {}
     tegangan_diketahui = {}
-    global node_hitung
-    node_hitung = []
-    V_hitung = {}
-    arus = {}
-    tegangan_resistor = {}
-    V_semua = {0: 0.0}
-
-def clear():
-    global komponen
-    komponen = []
-    nodes = {}
-    tegangan_diketahui = {}
-    global node_hitung
     node_hitung = []
     V_hitung = {}
     arus = {}
@@ -104,7 +101,10 @@ def check_kcl_error():
             result+=1
     if result == len(node_hitung):
         output()
-        
+
+def visualize():
+    print("meow")
+
 def output():
     print("\n=== Tegangan Node ===")
     for n in sorted(V_semua):
@@ -117,7 +117,7 @@ def output():
     print("\n=== Arus Cabang ===")
     for nama, i in arus.items():
         print(f"{nama}: {i*1000:.2f} mA")
-    clear_partial()
+    clear(False)
 
 while True:
     readuser = input(">")
@@ -125,18 +125,36 @@ while True:
         solve_kvl()
         solve_kcl_and_VR()
         check_kcl_error()
-    elif readuser == "-h":
-        print("seek -- seek circuits components")
-        print("clear -- clear components")
-        print("solve -- solve circuit")
-        print("How to use:\n ")
+        solved = True
+    elif readuser == "-h" or readuser == "help":
+        print("Perintah yang tersedia:")
+        print("  <komponen> <node_a> <node_b> <nilai>  -- tambah/ubah komponen, contoh: R1 1 2 100")
+        print("  seek       -- tampilkan semua komponen yang sudah dimasukkan")
+        print("  seeker on  -- tampilkan semua komponen yang sudah dimasukkan setelah input")
+        print("  seeker off -- mematikan tampilan semua komponen yang sudah dimasukkan setelah input")
+        print("  solve      -- selesaikan rangkaian (tegangan node & arus cabang)")
+        print("  visualize  -- tampilkan grafik tegangan vs node")
+        print("  clear      -- hapus semua komponen")
+        print("  -h/help    -- tampilkan bantuan ini")
+        print("\nFormat nama komponen: R untuk resistor, V untuk sumber tegangan")
+        print("Node 0 selalu dianggap ground (0V)")
     elif readuser == "clear":
-        clear()
+        clear(True)
+        solved = False
     elif readuser == "visualize":
-        print("dfafdfasdf")
+        if solved:
+            visualize()
+        else:
+            solve_kvl()
+            solve_kcl_and_VR()
+            check_kcl_error()
+            visualize()
     elif readuser == "seek":
-        for k in komponen:
-            print(f"{k["nama"]} Node A: {k["node_a"]} Node B: {k["node_b"]} Value: {k["nilai"]} {"V" if k["tipe"] == 'V' else 'Ω'}")
+        seek()
+    elif readuser == "seeker on":
+        seeker = True
+    elif readuser == "seeker off":
+        seeker = False
     else:
         split = readuser.split()
         try:
@@ -146,7 +164,7 @@ while True:
             elif split[0][0] == 'V':
                 tipe_k = 'V'
             else:
-                ValueError
+                raise ValueError
             node_a = int(split[1])
             node_b = int(split[2])
             value = float(split[3])
@@ -158,5 +176,10 @@ while True:
                     replace = True
             if not replace:
                 komponen.append({"nama": split[0], "tipe": tipe_k, "node_a": node_a, "node_b": node_b, "nilai": value})
+            solved = False
+            if seeker:
+                seek()
+        except IndexError:
+            print("Input Error")
         except ValueError:
             print("Input Error")
