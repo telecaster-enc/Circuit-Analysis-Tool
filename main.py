@@ -102,8 +102,24 @@ def check_kcl_error():
     if result == len(node_hitung):
         output()
 
+def find_x_y():
+    node_bar = []
+    values = []
+    
+    node_bar.append(1)
+    #values.append(V_semua[i] for i in sorted(V_semua.keys()))
+    #print(node_bar)
+    #print(values)
+
 def visualize():
-    print("meow")
+    labels = ["Node 0", "Node 1", "Node 2"]
+    nilai = [0.0, 9.0, 5.1]
+
+    plt.bar(labels, nilai)
+    plt.xlabel("Node")
+    plt.ylabel("Tegangan (V)")
+    plt.title("Tegangan tiap Node")
+    plt.show() 
 
 def output():
     print("\n=== Tegangan Node ===")
@@ -143,11 +159,13 @@ while True:
         solved = False
     elif readuser == "visualize":
         if solved:
+            find_x_y()
             visualize()
         else:
             solve_kvl()
             solve_kcl_and_VR()
             check_kcl_error()
+            find_x_y()
             visualize()
     elif readuser == "seek":
         seek()
