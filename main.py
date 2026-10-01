@@ -17,6 +17,16 @@ arus = {}
 tegangan_resistor = {}
 V_semua = {0: 0.0}
 
+def clear_partial():
+    nodes = {}
+    tegangan_diketahui = {}
+    global node_hitung
+    node_hitung = []
+    V_hitung = {}
+    arus = {}
+    tegangan_resistor = {}
+    V_semua = {0: 0.0}
+
 def clear():
     global komponen
     komponen = []
@@ -107,23 +117,30 @@ def output():
     print("\n=== Arus Cabang ===")
     for nama, i in arus.items():
         print(f"{nama}: {i*1000:.2f} mA")
+    clear_partial()
 
 while True:
     readuser = input(">")
-    if readuser == "selesai":
+    if readuser == "solve":
         solve_kvl()
         solve_kcl_and_VR()
         check_kcl_error()
     elif readuser == "-h":
-        print("Help Message")
+        print("seek -- seek circuits components")
+        print("clear -- clear components")
+        print("solve -- solve circuit")
+        print("How to use:\n ")
     elif readuser == "clear":
         clear()
+    elif readuser == "visualize":
+        print("dfafdfasdf")
     elif readuser == "seek":
-        print(komponen)
+        for k in komponen:
+            print(f"{k["nama"]} Node A: {k["node_a"]} Node B: {k["node_b"]} Value: {k["nilai"]} {"V" if k["tipe"] == 'V' else 'Ω'}")
     else:
         split = readuser.split()
         try:
-            tipe_k = ''
+            replace = False
             if split[0][0] == 'R':
                 tipe_k = 'R'
             elif split[0][0] == 'V':
@@ -133,6 +150,13 @@ while True:
             node_a = int(split[1])
             node_b = int(split[2])
             value = float(split[3])
-            komponen.append({"nama": split[0], "tipe": tipe_k, "node_a": node_a, "node_b": node_b, "nilai": value})
+            for k in komponen:
+                if k["nama"] == split[0]:
+                    k["node_a"] = node_a
+                    k["node_b"] = node_b
+                    k["nilai"] = value
+                    replace = True
+            if not replace:
+                komponen.append({"nama": split[0], "tipe": tipe_k, "node_a": node_a, "node_b": node_b, "nilai": value})
         except ValueError:
             print("Input Error")
