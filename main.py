@@ -123,16 +123,16 @@ while True:
     else:
         split = readuser.split()
         try:
-            tipe_k = []
-            split[0] == 'R' or 'V'
-            if split[0] == 'R':
-                tipe_k == 'R'
+            tipe_k = ''
+            if split[0][0] == 'R':
+                tipe_k = 'R'
+            elif split[0][0] == 'V':
+                tipe_k = 'V'
             else:
-                tipe_k == 'V'
-            split[1].isdigit() and split[2].isdigit()
-            float(split[3])
-            komponen.append({split[0], tipe_k, split[1], split[2], split[3]})
+                ValueError
+            node_a = int(split[1])
+            node_b = int(split[2])
+            value = float(split[3])
+            komponen.append({"nama": split[0], "tipe": tipe_k, "node_a": node_a, "node_b": node_b, "nilai": value})
         except ValueError:
-            print("Input Error")        
-        
-
+            print("Input Error")
