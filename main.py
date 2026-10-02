@@ -74,10 +74,11 @@ def solve_kvl():
 
     #print("Matriks G:\n", G)
     #print("Vektor I:\n", I)
-
+    global V_semua
     V_hitung = np.linalg.solve(G, I)
     V_semua.update(tegangan_diketahui)
     V_semua.update(dict(zip(node_hitung, V_hitung)))
+    print(V_semua)
 
 def solve_kcl_and_VR():
     for k in komponen:
@@ -102,20 +103,25 @@ def check_kcl_error():
     if result == len(node_hitung):
         output()
 
-def find_x_y():
-    node_bar = []
-    values = []
-    
-    node_bar.append(1)
-    #values.append(V_semua[i] for i in sorted(V_semua.keys()))
-    #print(node_bar)
-    #print(values)
-
 def visualize():
-    labels = ["Node 0", "Node 1", "Node 2"]
-    nilai = [0.0, 9.0, 5.1]
-
-    plt.bar(labels, nilai)
+    node_bar = []
+    values = [V_semua[n] for n in sorted(V_semua.keys())]
+    for n in sorted(V_semua.keys()):
+        node_bar.append(f"Node {n}")
+    clear(False)
+    fig, ax = plt.subplots()
+    bars = ax.bar(
+            node_bar, 
+            values,
+            width=0.6, 
+            color='skyblue', 
+            edgecolor='navy', 
+            linewidth=1.5,
+            alpha=0.85
+           )
+    ax.bar_label(bars, padding=3)
+    ax.set_ylim(0, max(values) + 5)
+    plt.title("Tegangan")
     plt.xlabel("Node")
     plt.ylabel("Tegangan (V)")
     plt.title("Tegangan tiap Node")
@@ -133,7 +139,7 @@ def output():
     print("\n=== Arus Cabang ===")
     for nama, i in arus.items():
         print(f"{nama}: {i*1000:.2f} mA")
-    clear(False)
+    
 
 while True:
     readuser = input(">")
@@ -159,20 +165,18 @@ while True:
         solved = False
     elif readuser == "visualize":
         if solved:
-            find_x_y()
             visualize()
         else:
             solve_kvl()
             solve_kcl_and_VR()
             check_kcl_error()
-            find_x_y()
             visualize()
-    elif readuser == "seek":
-        seek()
     elif readuser == "seeker on":
         seeker = True
     elif readuser == "seeker off":
-        seeker = False
+        seeker = False        
+    elif readuser == "seek":
+        seek()
     else:
         split = readuser.split()
         try:
