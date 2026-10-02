@@ -38,13 +38,11 @@ def clear(all):
 
 def solve_kvl():
     nodes = sorted(set(k["node_a"] for k in komponen) | set(k["node_b"] for k in komponen) - {0})
-    #print("Node yang dihitung:", nodes)
     for k in komponen:
-        if k["tipe"] == "V" and k["node_b"] == 0:
+        if k["tipe"] == "V" and (k["node_b"] < k["node_a"]):
            tegangan_diketahui[k["node_a"]] = k["nilai"]
-        elif k["tipe"] == "V" and k["node_a"] == 0:
+        elif k["tipe"] == "V" and (k["node_b"] > k["node_a"]):
             tegangan_diketahui[k["node_b"]] = -k["nilai"]
-    #print("Tegangan diketahui:", tegangan_diketahui)
     global node_hitung
     node_hitung = [n for n in nodes if n not in tegangan_diketahui]
     #print("Node yang perlu dihitung lewat KCL:", node_hitung)
@@ -78,14 +76,12 @@ def solve_kvl():
     V_hitung = np.linalg.solve(G, I)
     V_semua.update(tegangan_diketahui)
     V_semua.update(dict(zip(node_hitung, V_hitung)))
-    print(V_semua)
 
 def solve_kcl_and_VR():
     for k in komponen:
         if k["tipe"] == "R":
             arus[k["nama"]] = (V_semua[k["node_a"]] - V_semua[k["node_b"]]) / k["nilai"]
             tegangan_resistor[k["nama"]] = (V_semua[k["node_a"]] - V_semua[k["node_b"]]) 
-    #output()
 
 def check_kcl_error():
     result = 0
@@ -102,13 +98,14 @@ def check_kcl_error():
             result+=1
     if result == len(node_hitung):
         output()
+    else:
+        print("KCL tidak balance, rangkaian terisolasi (Report ke issue jika bisa)")
 
 def visualize():
     node_bar = []
     values = [V_semua[n] for n in sorted(V_semua.keys())]
     for n in sorted(V_semua.keys()):
         node_bar.append(f"Node {n}")
-    clear(False)
     fig, ax = plt.subplots()
     bars = ax.bar(
             node_bar, 
@@ -140,10 +137,10 @@ def output():
     for nama, i in arus.items():
         print(f"{nama}: {i*1000:.2f} mA")
     
-
 while True:
     readuser = input(">")
     if readuser == "solve":
+        clear(False)
         solve_kvl()
         solve_kcl_and_VR()
         check_kcl_error()
@@ -158,6 +155,7 @@ while True:
         print("  visualize  -- tampilkan grafik tegangan vs node")
         print("  clear      -- hapus semua komponen")
         print("  -h/help    -- tampilkan bantuan ini")
+        print("  exit       -- keluar dari program ini")
         print("\nFormat nama komponen: R untuk resistor, V untuk sumber tegangan")
         print("Node 0 selalu dianggap ground (0V)")
     elif readuser == "clear":
@@ -177,6 +175,8 @@ while True:
         seeker = False        
     elif readuser == "seek":
         seek()
+    elif readuser == "exit":
+        break
     else:
         split = readuser.split()
         try:
