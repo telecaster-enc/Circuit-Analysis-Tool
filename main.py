@@ -39,9 +39,9 @@ def clear(all):
 def solve_kvl():
     nodes = sorted(set(k["node_a"] for k in komponen) | set(k["node_b"] for k in komponen) - {0})
     for k in komponen:
-        if k["tipe"] == "V" and (k["node_b"] < k["node_a"]):
-           tegangan_diketahui[k["node_a"]] = k["nilai"]
-        elif k["tipe"] == "V" and (k["node_b"] > k["node_a"]):
+        if k["tipe"] == "V" and k["node_b"] == 0:
+            tegangan_diketahui[k["node_a"]] = k["nilai"]
+        elif k["tipe"] == "V" and k["node_a"] == 0:
             tegangan_diketahui[k["node_b"]] = -k["nilai"]
     global node_hitung
     node_hitung = [n for n in nodes if n not in tegangan_diketahui]
@@ -148,14 +148,13 @@ while True:
     elif readuser == "-h" or readuser == "help":
         print("Perintah yang tersedia:")
         print("  <komponen> <node_a> <node_b> <nilai>  -- tambah/ubah komponen, contoh: R1 1 2 100")
-        print("  seek       -- tampilkan semua komponen yang sudah dimasukkan")
-        print("  seeker on  -- tampilkan semua komponen yang sudah dimasukkan setelah input")
-        print("  seeker off -- mematikan tampilan semua komponen yang sudah dimasukkan setelah input")
-        print("  solve      -- selesaikan rangkaian (tegangan node & arus cabang)")
-        print("  visualize  -- tampilkan grafik tegangan vs node")
-        print("  clear      -- hapus semua komponen")
-        print("  -h/help    -- tampilkan bantuan ini")
-        print("  exit       -- keluar dari program ini")
+        print("  seek           -- tampilkan semua komponen yang sudah dimasukkan")
+        print("  seeker on/off  -- tampilkan/mematikan tampilan semua komponen yang sudah dimasukkan setelah input")
+        print("  solve          -- selesaikan rangkaian (tegangan node & arus cabang)")
+        print("  visualize      -- tampilkan grafik tegangan vs node")
+        print("  clear          -- hapus semua komponen")
+        print("  -h/help        -- tampilkan bantuan ini")
+        print("  exit           -- keluar dari program ini")
         print("\nFormat nama komponen: R untuk resistor, V untuk sumber tegangan")
         print("Node 0 selalu dianggap ground (0V)")
     elif readuser == "clear":
