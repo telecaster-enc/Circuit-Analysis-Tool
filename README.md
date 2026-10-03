@@ -27,6 +27,7 @@ di mana `G` adalah matriks konduktansi, `V` vektor tegangan node yang dicari, da
 | `visualize` | Tampilkan grafik batang tegangan vs node (matplotlib) |
 | `clear` | Hapus semua komponen |
 | `-h` / `help` | Tampilkan bantuan |
+| `exit` | Keluar dari program |
 
 Format nama komponen: `R` untuk resistor, `V` untuk sumber tegangan. Node `0` selalu dianggap ground (0V).
 
